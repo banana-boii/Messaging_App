@@ -1,7 +1,7 @@
 # DB logic (create, read, etc.)
 
 from sqlalchemy.orm import Session
-import models, schemas
+from . import models, schemas
 import hashlib
 
 def create_user(db: Session, user: schemas.UserCreate):
@@ -13,7 +13,7 @@ def create_user(db: Session, user: schemas.UserCreate):
     return db_user
 
 def get_user_by_email(db: Session, email: str):
-    return db.query(models.user).filter(models.User.email == email).first()
+    return db.query(models.User).filter(models.User.email == email).first()
 
 def create_message(db: Session, msg: schemas.MessageCreate):
     db_msg = models.Message(**msg.dict())
@@ -25,5 +25,5 @@ def create_message(db: Session, msg: schemas.MessageCreate):
 def get_messages_between_users(db: Session, sender_id: int, receiver_id:int):
     return db.query(models.Message).filter(
         ((models.Message.sender_id == sender_id) & (models.Message.receiver_id == receiver_id)) |
-        ((models.Message.sender_id == receiver_id) & (models.Message.Message.receiver_id == sender_id))
+        ((models.Message.sender_id == receiver_id) & (models.Message.receiver_id == sender_id))
     ).all()
