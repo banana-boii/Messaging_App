@@ -31,3 +31,13 @@ def send_message(msg: schemas.MessageCreate, db: Session = Depends(get_db)):
 def get_chat(user1_id: int, user2_id: int, db: Session = Depends(get_db)):
     return crud.get_messages_between_users(db, user1_id, user2_id)
 
+@app.post("/login/")
+def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
+    db_user = crud.get_user_by_email(db, user.email)
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if db_user.password != user.password:
+        raise HTTPException(status_code=401, detail="Incorrect password")
+    
+    return {"message": "Login succesful", "email": db_user.email}
