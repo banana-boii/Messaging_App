@@ -1,13 +1,25 @@
  # FastAPI entry point
 
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from . import models, schemas, crud
 from .database import SessionLocal, engine
+import hashlib
+
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+# Allow frontend requests (adjust as needed)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://127.0.0.1:8000","http://localhost:3000"],  # frontend origin
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def get_db():
     db = SessionLocal()
@@ -36,8 +48,15 @@ def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_email(db, user.email)
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
-    
-    if db_user.password != user.password:
+    hashed = hashlib.sha256(user.password.encode()).hexdigest()
+    if db_user.password_hash != hashed:
         raise HTTPException(status_code=401, detail="Incorrect password")
     
     return {"message": "Login succesful", "email": db_user.email}
+
+@app.middleware("http")
+async def log_requests(request, call_next):
+    print(f"Incoming request: {request.method} {request.url}")
+    response = await call_next(request)
+    print(f"Response status: {response.status_code}")
+    return response

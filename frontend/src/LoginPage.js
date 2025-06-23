@@ -17,7 +17,9 @@ function LoginPage() {
 
             if (response.ok) {
                 const data = await response.json();
+                console.log("Login data:", data);
                 alert("Login succefsul!");
+                navigate("/chat");
             }else {
                 alert("Invalid credentials.");
             }
@@ -27,6 +29,7 @@ function LoginPage() {
         }
         // TODO: Call backend API to login
         console.log("Logging in:", { email, password });
+        
     };
 
     return(
