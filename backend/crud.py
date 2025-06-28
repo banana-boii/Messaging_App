@@ -27,3 +27,4 @@ def get_messages_between_users(db: Session, sender_id: int, receiver_id:int):
         ((models.Message.sender_id == sender_id) & (models.Message.receiver_id == receiver_id)) |
         ((models.Message.sender_id == receiver_id) & (models.Message.receiver_id == sender_id))
     ).all()
+    

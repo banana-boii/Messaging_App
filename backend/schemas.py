@@ -33,3 +33,7 @@ class MessageOut(BaseModel):
 class UserLogin(BaseModel):
     email: str
     password: str
+
+class FriendshipCreate(BaseModel):
+    user_id: int
+    friend_email: str

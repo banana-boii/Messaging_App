@@ -54,6 +54,39 @@ def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
     
     return {"message": "Login succesful", "email": db_user.email}
 
+@app.post("/add-friend/")
+def add_friend(data: schemas.FriendshipCreate, db: Session = Depends(get_db)):
+    current_user = db.query(models.User).filter(models.User.user_id == data.user_id).first()
+    friend_user = db.query(models.User).filter(models.User.user.email == data.friend_email).first()
+
+    if not friend_user:
+        raise HTTPException(status_code=404, details="User not found")
+    
+    #Prevent adding adding self or duplicate
+    if current_user.user_id == friend_user.user_id:
+        raise HTTPException(status_code=400, details="Cannot add yourself")
+    
+    existing = db.query(models.Friends).filter_by(
+        user_id=current_user.user_id,
+        friend_id=friend_user.user_id
+    ).first()
+    
+    if existing:
+        raise HTTPException(status_code=400, details="Already added")
+    
+    friendship = models.Friends(user_id=current_user.user_id, friend_id=friend_user.user_id)
+    db.add(friendship)
+    db.commit()
+
+    return {"message": "Friend added!"}
+
+@app.get("/users/search")
+def search_user(email: str, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, details="User not found")
+    return {"user_id": user.user_id, "email":user.email}
+
 @app.middleware("http")
 async def log_requests(request, call_next):
     print(f"Incoming request: {request.method} {request.url}")
