@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useUser } from "./UserContext";
 
 function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const navigate = useNavigate();
+    const { setUser} = useUser();
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -19,6 +21,10 @@ function LoginPage() {
                 const data = await response.json();
                 console.log("Login data:", data);
                 alert("Login succefsul!");
+                setUser({
+                    user_id: data.user_id,
+                    email: data.email
+                });
                 navigate("/chat");
             }else {
                 alert("Invalid credentials.");

@@ -1,11 +1,13 @@
 import React, {useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useUser } from "../UserContext";
 
 function ChatPage(){
 
     const navigate = useNavigate();
     const [searchEmail, setSearchEmail] = useState("");
     const [SearchResult, setSearchResult] = useState(null);
+    const { user } = useUser();
 
     const handleLogout = () => {
         navigate("/");
@@ -32,7 +34,7 @@ function ChatPage(){
             method: "Post",
             headers: {"Conntent-Typr": "application/json" },
             body: FocusEvent.stringify({
-                user_id: YOUR_LOGGED_IN_USER_ID,
+                user_id: user.user_id,
                 friend_email: SearchResult.email,
             }),
         });
