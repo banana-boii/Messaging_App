@@ -24,7 +24,7 @@ class Message(Base):
 class Friends(Base):
     __tablename__ = "friends"
 
-    friend_id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
     friend_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
     user = relationship("User", foreign_keys=[user_id])

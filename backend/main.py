@@ -1,7 +1,7 @@
  # FastAPI entry point
 
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from . import models, schemas, crud
 from .database import SessionLocal, engine
@@ -52,19 +52,23 @@ def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
     if db_user.password_hash != hashed:
         raise HTTPException(status_code=401, detail="Incorrect password")
     
-    return {"message": "Login succesful", "email": db_user.email}
+    return {
+        "user_id": db_user.user_id,
+        "email": db_user.email,
+        "message": "Login successful"
+    }
 
 @app.post("/add-friend/")
-def add_friend(data: schemas.FriendshipCreate, db: Session = Depends(get_db)):
-    current_user = db.query(models.User).filter(models.User.user_id == data.user_id).first()
-    friend_user = db.query(models.User).filter(models.User.user.email == data.friend_email).first()
+def add_friend(request: schemas.FriendshipCreate, db: Session = Depends(get_db)):
+    current_user = db.query(models.User).filter(models.User.user_id == request.user_id).first()
+    friend_user = db.query(models.User).filter(models.User.email == request.friend_email).first()
 
     if not friend_user:
-        raise HTTPException(status_code=404, details="User not found")
+        raise HTTPException(status_code=404, detail="User not found")
     
     #Prevent adding adding self or duplicate
     if current_user.user_id == friend_user.user_id:
-        raise HTTPException(status_code=400, details="Cannot add yourself")
+        raise HTTPException(status_code=400, detail="Cannot add yourself")
     
     existing = db.query(models.Friends).filter_by(
         user_id=current_user.user_id,
@@ -72,11 +76,9 @@ def add_friend(data: schemas.FriendshipCreate, db: Session = Depends(get_db)):
     ).first()
     
     if existing:
-        raise HTTPException(status_code=400, details="Already added")
+        raise HTTPException(status_code=400, detail="Already added")
     
-    friendship = models.Friends(user_id=current_user.user_id, friend_id=friend_user.user_id)
-    db.add(friendship)
-    db.commit()
+    crud.add_friend(db=db, user_id=current_user.user_id, friend_id=friend_user.user_id)
 
     return {"message": "Friend added!"}
 
@@ -86,6 +88,16 @@ def search_user(email: str, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, details="User not found")
     return {"user_id": user.user_id, "email":user.email}
+
+@app.get("/friends/{user_id}")
+def get_friends(user_id: int, db: Session = Depends(get_db)):
+    friends = db.query(models.Friends).filter(models.Friends.user_id == user_id).all()
+    friend_list = []
+    for f in friends:
+        friend = db.query(models.User).filter(models.User.user_id == f.friend_id).first()
+        if friend:
+            friend_list.append({"user_id": friend.user_id, "email": friend.email})
+    return friend_list
 
 @app.middleware("http")
 async def log_requests(request, call_next):

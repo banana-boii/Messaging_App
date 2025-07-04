@@ -27,4 +27,11 @@ def get_messages_between_users(db: Session, sender_id: int, receiver_id:int):
         ((models.Message.sender_id == sender_id) & (models.Message.receiver_id == receiver_id)) |
         ((models.Message.sender_id == receiver_id) & (models.Message.receiver_id == sender_id))
     ).all()
+
+def add_friend(db: Session, user_id: int, friend_id: int):
+    friend_entry = models.Friends(user_id=user_id, friend_id=friend_id)
+    db.add(friend_entry)
+    db.commit()
+    db.refresh(friend_entry)
+    return friend_entry
     

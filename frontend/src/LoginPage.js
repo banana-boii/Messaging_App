@@ -25,6 +25,7 @@ function LoginPage() {
                     user_id: data.user_id,
                     email: data.email
                 });
+                console.log("User object set in context:", { user_id: data.user_id, email: data.email });
                 navigate("/chat");
             }else {
                 alert("Invalid credentials.");
