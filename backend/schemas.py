@@ -4,12 +4,13 @@ from pydantic import BaseModel
 from datetime import datetime
 
 class UserCreate(BaseModel):
+    username: str
     email: str
     password: str
 
 class UserOut(BaseModel):
     user_id: int
-    email: str
+    username: str
     created_at: datetime
 
     class Config:
@@ -31,9 +32,9 @@ class MessageOut(BaseModel):
         orm_mode = True
 
 class UserLogin(BaseModel):
-    email: str
+    username: str
     password: str
 
 class FriendshipCreate(BaseModel):
     user_id: int
-    friend_email: str
+    friend_username: str

@@ -6,7 +6,7 @@ import hashlib
 
 def create_user(db: Session, user: schemas.UserCreate):
     hashed_password = hashlib.sha256(user.password.encode()).hexdigest()
-    db_user = models.User(email=user.email, password_hash=hashed_password)
+    db_user = models.User(username=user.username, email=user.email, password_hash=hashed_password)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
@@ -14,6 +14,9 @@ def create_user(db: Session, user: schemas.UserCreate):
 
 def get_user_by_email(db: Session, email: str):
     return db.query(models.User).filter(models.User.email == email).first()
+
+def get_user_by_username(db: Session, username: str):
+    return db.query(models.User).filter(models.User.username == username).first()
 
 def create_message(db: Session, msg: schemas.MessageCreate):
     db_msg = models.Message(**msg.dict())

@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 
 function RegisterPage() {
     const [email, setEmail] = useState("");
+    const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const navigate = useNavigate();
 
@@ -12,7 +13,7 @@ function RegisterPage() {
             const response = await fetch("http://127.0.0.1:8000/users/", {
                 method: "POST",
                 headers: {"Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ username, email, password }),
             });
 
             if (response.ok) {
@@ -27,7 +28,7 @@ function RegisterPage() {
             alert("Something went wrong!");
         }
         // TODO: Call backend API to register
-        console.log("Registering:", {email, password });
+        console.log("Registering:", {username, email, password });
 
     };
 
@@ -41,6 +42,16 @@ function RegisterPage() {
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
+                </label>
+                <br /><br />
+                <label>
+                    Username: <br />
+                    <input
+                        type="username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
                         required
                     />
                 </label>

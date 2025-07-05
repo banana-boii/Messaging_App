@@ -5,7 +5,7 @@ import { useUser } from "./UserContext";
 function ChatPage(){
 
     const navigate = useNavigate();
-    const [searchEmail, setSearchEmail] = useState("");
+    const [searchUsername, setSearchUsername] = useState("");
     const [searchResult, setSearchResult] = useState(null);
     const [friends, setFriends] = useState([]);
     const [selectedFriend, setSelectedFriend] = useState(null);
@@ -29,7 +29,7 @@ function ChatPage(){
 
     const handleSearch = async () => {
         try {
-            const response = await fetch(`http://127.0.0.1:8000/users/search?email=${searchEmail}`);            
+            const response = await fetch(`http://127.0.0.1:8000/users/search?username=${searchUsername}`);            
             if (response.ok){
                 const data = await response.json();
                 console.log("Search result:", data);
@@ -54,7 +54,7 @@ function ChatPage(){
             headers: {"Content-Type": "application/json" },
             body: JSON.stringify({
                 user_id: user.user_id,
-                friend_email: searchResult.email,
+                friend_username: searchResult.username,
             }),
         });
         //console.log("Add friend response:", response);
@@ -64,7 +64,7 @@ function ChatPage(){
         if (response.ok) {
             alert("Friend added!");
             setSearchResult(null);
-            setSearchEmail("");
+            setSearchUsername("");
             fetch(`http://127.0.0.1:8000/friends/${user.user_id}`)
                 .then(response => response.json())
                 .then(data => setFriends(data));
@@ -85,7 +85,7 @@ function ChatPage(){
                             style={{ padding: "8px", cursor: "pointer", background: selectedFriend && selectedFriend.user_id === f.user_id ? "#ddd" : "transparent"}}
                             onClick={() => setSelectedFriend(f)}
                         >
-                            {f.email}
+                            {f.username}
                         </li>
                     ))}
                 </ul>
@@ -95,8 +95,8 @@ function ChatPage(){
                 <div>
                     <input
                         type="text"
-                        value={searchEmail}
-                        onChange={(e) => setSearchEmail(e.target.value)}
+                        value={searchUsername}
+                        onChange={(e) => setSearchUsername(e.target.value)}
                         placeholder="Search usesr by email"
                     />
                     <button onClick={handleSearch}>Search</button>
@@ -110,7 +110,7 @@ function ChatPage(){
                 <hr />
                 {selectedFriend ? (
                     <div>
-                        <h2>Chat with {selectedFriend.email}</h2>
+                        <h2>Chat with {selectedFriend.username}</h2>
                         {/* Chat messages and input would go here */}
                     </div>
                 ) : (

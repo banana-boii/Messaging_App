@@ -33,6 +33,8 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_email(db, user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
+    if crud.get_user_by_username(db, user.username):
+        raise HTTPException(status_code=400, detail="Username already exists")
     return crud.create_user(db, user)
 
 @app.post("/messages/", response_model=schemas.MessageOut)
@@ -45,7 +47,7 @@ def get_chat(user1_id: int, user2_id: int, db: Session = Depends(get_db)):
 
 @app.post("/login/")
 def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
-    db_user = crud.get_user_by_email(db, user.email)
+    db_user = crud.get_user_by_username(db, user.username)
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
     hashed = hashlib.sha256(user.password.encode()).hexdigest()
@@ -55,13 +57,14 @@ def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
     return {
         "user_id": db_user.user_id,
         "email": db_user.email,
+        "username": db_user.username,
         "message": "Login successful"
     }
 
 @app.post("/add-friend/")
 def add_friend(request: schemas.FriendshipCreate, db: Session = Depends(get_db)):
     current_user = db.query(models.User).filter(models.User.user_id == request.user_id).first()
-    friend_user = db.query(models.User).filter(models.User.email == request.friend_email).first()
+    friend_user = db.query(models.User).filter(models.User.username == request.friend_username).first()
 
     if not friend_user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -83,11 +86,11 @@ def add_friend(request: schemas.FriendshipCreate, db: Session = Depends(get_db))
     return {"message": "Friend added!"}
 
 @app.get("/users/search")
-def search_user(email: str, db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.email == email).first()
+def search_user(username: str, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.username == username).first()
     if not user:
         raise HTTPException(status_code=404, details="User not found")
-    return {"user_id": user.user_id, "email":user.email}
+    return {"user_id": user.user_id, "email":user.email, "username": user.username}
 
 @app.get("/friends/{user_id}")
 def get_friends(user_id: int, db: Session = Depends(get_db)):
@@ -96,7 +99,7 @@ def get_friends(user_id: int, db: Session = Depends(get_db)):
     for f in friends:
         friend = db.query(models.User).filter(models.User.user_id == f.friend_id).first()
         if friend:
-            friend_list.append({"user_id": friend.user_id, "email": friend.email})
+            friend_list.append({"user_id": friend.user_id, "email": friend.email, "username": friend.username})
     return friend_list
 
 @app.middleware("http")

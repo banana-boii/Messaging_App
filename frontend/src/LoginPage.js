@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useUser } from "./UserContext";
 
 function LoginPage() {
-    const [email, setEmail] = useState("");
+    const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const navigate = useNavigate();
     const { setUser} = useUser();
@@ -14,7 +14,7 @@ function LoginPage() {
             const response = await fetch("http://127.0.0.1:8000/login/", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ username, password }),
             });
 
             if (response.ok) {
@@ -23,9 +23,9 @@ function LoginPage() {
                 alert("Login succefsul!");
                 setUser({
                     user_id: data.user_id,
-                    email: data.email
+                    username: data.username
                 });
-                console.log("User object set in context:", { user_id: data.user_id, email: data.email });
+                console.log("User object set in context:", { user_id: data.user_id, username: data.username });
                 navigate("/chat");
             }else {
                 alert("Invalid credentials.");
@@ -35,7 +35,7 @@ function LoginPage() {
             alert("Error logging in.");
         }
         // TODO: Call backend API to login
-        console.log("Logging in:", { email, password });
+        console.log("Logging in:", { username, password });
         
     };
 
@@ -44,11 +44,11 @@ function LoginPage() {
             <h2>Login</h2>
             <form onSubmit={handleLogin}>
                 <label>
-                    Email: <br />
+                    Username: <br />
                     <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        type="username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
                         required
                     />
                 </label>
