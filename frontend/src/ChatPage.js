@@ -16,12 +16,7 @@ function ChatPage(){
     useEffect(() => {
         if (user && selectedFriend) {
             console.log("User object in ChatPage:", user);
-            fetch (`http://127.0.0.1:8000/messages/${user.user_id}/${selectedFriend.user_id}`)
-                .then(response => response.json())
-                .then(data => {
-                    console.log("Friends data received:", data);
-                    setMessages(data.slice(-20));// Display last 20 messages
-                });      
+            fetchMessages();  
         }
     }, [user, selectedFriend]);
 
@@ -44,21 +39,30 @@ function ChatPage(){
         navigate("/");
     }
 
+    const fetchMessages = async () => {
+        const response = await fetch(`http://127.0.0.1:8000/messages/${user.user_id}/${selectedFriend.user_id}`);
+        if (response.ok) {
+            const data = await response.json();
+            setMessages(data.slice(-20)); // Display last 20 messages
+        }
+    }
+
     const handleSendMessage = async () => {
         if (!messageText.trim() || !selectedFriend || !user) return;
 
-        const response = await fetch("http://127.0.0.1:8000/send-message/", {
+        const response = await fetch("http://127.0.0.1:8000/post-messages/", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 sender_id: user.user_id,
                 receiver_id: selectedFriend.user_id,
-                message: messageText
+                content: messageText
             })
         });
 
         if (response.ok) {
             setMessageText("");
+            await fetchMessages();
             console.log("Message sent successfully");
         }else {
             const err = await response.json();
@@ -177,7 +181,7 @@ function ChatPage(){
                             value={messageText}
                             onChange={(e) => setMessageText(e.target.value)}
                             placeholder="Type your message..."
-                            style={{ flexGrow: 1, width: "80%", padding: "8px", fontSize: "1rem", borderRadius: "5px", boder: "1px solid #ccc", backgroundColor: "#fff", marginRight: "10px", minWidth: 0 }}
+                            style={{ width: "1025px", padding: "8px", fontSize: "1rem", borderRadius: "5px", boder: "1px solid #ccc", backgroundColor: "#fff", marginRight: "10px", minWidth: 0 }}
                             />
                         <button onClick={handleSendMessage} style={{padding: "8px 16px", backgroundColor: "#007bff", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer" ,whiteSpace: "nowrap"}}>Send</button>
                     </div>

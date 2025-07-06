@@ -37,7 +37,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Username already exists")
     return crud.create_user(db, user)
 
-@app.post("/messages/", response_model=schemas.MessageOut)
+@app.post("/post-messages/", response_model=schemas.MessageOut)
 def send_message(msg: schemas.MessageCreate, db: Session = Depends(get_db)):
     return crud.create_message(db, msg)
 
